@@ -4,8 +4,8 @@
   const CFG = {
     clientId: "a2b31038-4fac-4e8b-8516-5b4c931f5a16",
     tenantId: "0c07cc35-4442-46a2-a2b1-a250d653b92f",
-    site: "febdistributing365.sharepoint.com:/sites/Sales",
-    lists: { accounts: "7319a95e-eaa8-4dd4-9157-86c64eb51d2e", products: "c1abafe9-a1fd-4ce6-b172-8cdcbe120c79", orders: "06957eb8-5595-45b5-b0ab-bc0ebebe3649" },
+    site: "febdistributing365.sharepoint.com:/sites/PristineSpecialOrders",
+    lists: { accounts: "baed8fad-89d9-4462-93df-caf317c1d463", products: "5f5b99a8-46f7-46dc-936f-77a9f3dfae54", orders: "d1705b46-6f32-4e97-b834-0babea675f4d" },
     scopes: ["Sites.ReadWrite.All"],
     tax: 0.07
   };
@@ -228,7 +228,7 @@
       $("#who").textContent = account.name || account.username; $("#main").hidden = false; status("");
     } catch (e) {
       if (e.message === "redirecting") return;
-      if (e.message === "noaccess") return status("You're signed in, but you don't have access to the Sales site lists. Ask Matthew Hessell to add you.", true);
+      if (e.message === "noaccess") return status("You're signed in, but you don't have access to the Pristine Special Orders site. Ask Matthew Hessell to add you.", true);
       status("Couldn't load accounts and products (" + esc(e.message) + "). Reload the page in a minute.", true);
     }
   }
