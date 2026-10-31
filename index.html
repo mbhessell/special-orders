@@ -1,0 +1,86 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Special Orders</title>
+<style>
+:root{--bg:#eef1f2;--card:#fff;--ink:#18232a;--muted:#5b6a73;--line:#d3dade;--ours:#2f5866;--warn:#c0623b;--soft:#dde8ec;--ok:#2e7d4f}
+@media (prefers-color-scheme:dark){:root{--bg:#11181c;--card:#1a2328;--ink:#e7ecee;--muted:#9aaab2;--line:#2e3a40;--ours:#7fb6c6;--warn:#e58a63;--soft:#1f3a43;--ok:#6fcf97}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:16px 16px 48px}
+h1{font-size:24px;margin:0}h2{font-size:16px;margin:0 0 10px}.muted{color:var(--muted)}
+.bar2{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;font-size:13px;flex-wrap:wrap}
+.linkbtn{background:none;border:0;color:var(--ours);font:inherit;font-weight:600;cursor:pointer;padding:4px}
+.tabs{display:flex;gap:0;margin:14px 0}
+.tabs button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 16px;cursor:pointer}
+.tabs button:first-child{border-radius:8px 0 0 8px}.tabs button:last-child{border-radius:0 8px 8px 0}
+.tabs button[aria-pressed=true]{background:var(--ours);color:var(--card);border-color:var(--ours)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+label.f{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+input,select{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);width:100%}
+input:focus{outline:2px solid var(--ours);outline-offset:-1px}
+.search{position:relative}
+.dd{position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--card);border:1px solid var(--line);border-radius:8px;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:360px;overflow:auto}
+.dd div{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line)}.dd div:last-child{border-bottom:0}
+.dd div:hover,.dd div.hl{background:var(--soft)}.dd small{display:block;color:var(--muted);font-size:12px}
+.acct{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px;margin-top:14px}
+.acct .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.acct .v{font-weight:600}
+.acct.empty{display:block;color:var(--muted);font-style:italic}
+.lines{width:100%;border-collapse:collapse}
+.lines th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:6px;font-weight:600}
+.lines td{padding:6px;vertical-align:top}.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lines td.num{padding-top:16px}.lines input.qty{width:80px;text-align:right}
+.x{border:0;background:none;color:var(--muted);font-size:20px;cursor:pointer;padding:8px}
+.add{font:inherit;font-weight:600;border:1px dashed var(--ours);color:var(--ours);background:none;border-radius:8px;padding:8px 14px;cursor:pointer;margin-top:8px}
+.tot{margin-left:auto;width:min(320px,100%);margin-top:14px}.tot div{display:flex;justify-content:space-between;padding:4px 0}
+.tot .grand{border-top:2px solid var(--ink);margin-top:4px;padding-top:8px;font-size:18px;font-weight:700}
+.go{font:inherit;font-weight:700;font-size:16px;border:0;border-radius:10px;padding:14px 18px;background:var(--ours);color:var(--card);cursor:pointer;width:100%}
+.go:disabled{opacity:.45;cursor:not-allowed}
+.status{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:14px 0}
+.status.err{border-color:var(--warn);color:var(--warn)}.status.ok{border-color:var(--ok);color:var(--ok)}
+.signin{max-width:420px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;text-align:center}
+.signin .go{margin-top:16px}
+.grp{border-top:1px solid var(--line);padding:12px 0}.grp:first-child{border-top:0;padding-top:0}
+.grp table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}.grp td{padding:4px 6px;border-bottom:1px solid var(--line)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media (max-width:640px){
+ .lines thead{display:none}.lines tr{display:grid;grid-template-columns:1fr 90px 40px;grid-template-areas:"p p x" "q t t";border-bottom:1px solid var(--line);padding:6px 0}
+ .lines td.p{grid-area:p}.lines td.q{grid-area:q}.lines td.pr{display:none}.lines td.t{grid-area:t}.lines td.xx{grid-area:x}
+ .row2{grid-template-columns:1fr}
+}
+</style></head><body><div class="wrap">
+<div class="signin" id="signin" hidden><h1>Special Orders</h1><p class="muted">F.E.B. Distributing. Sign in with your Microsoft 365 account.</p><button class="go" id="signbtn">Sign in with Microsoft</button></div>
+<div id="status" class="status" hidden></div>
+<div id="main" hidden>
+ <div class="bar2"><span class="muted">Signed in as <b id="who"></b></span><span><button class="linkbtn" id="signout">Sign out</button></span></div>
+ <h1>MS ABC Special Purchase Order</h1>
+ <div class="tabs"><button id="tNew" aria-pressed="true">New order</button><button id="tWeek" aria-pressed="false">This week's orders</button></div>
+
+ <section id="vNew">
+  <div class="card">
+   <h2>1. Account</h2>
+   <label class="f" for="acctQ">Search store name, permit holder, permit # or city</label>
+   <div class="search"><input id="acctQ" type="search" autocomplete="off" placeholder="e.g. Rooney's, 030077, Gulfport"><div class="dd" id="acctDD" hidden></div></div>
+   <div class="acct empty" id="acct">No account selected.</div>
+   <div class="row2" id="acctExtra" hidden>
+    <div><label class="f" for="phone">Phone</label><input id="phone" inputmode="tel" placeholder="(228) 555-0100"></div>
+    <div><label class="f" for="auth">Authorization code (optional)</label><input id="auth"></div>
+   </div>
+  </div>
+  <div class="card">
+   <h2>2. Products</h2>
+   <table class="lines"><thead><tr><th>Product (code or brand)</th><th class="num">Cases</th><th class="num">Price/case</th><th class="num">Total</th><th></th></tr></thead><tbody id="lines"></tbody></table>
+   <button class="add" id="addLine">+ Add product</button>
+   <div class="tot"><div><span>Sub-total</span><span class="num" id="sub">$0.00</span></div><div><span>7% tax</span><span class="num" id="tax">$0.00</span></div><div class="grand"><span>Total</span><span class="num" id="tot">$0.00</span></div></div>
+  </div>
+  <button class="go" id="submit" disabled>Submit order</button>
+  <p class="muted" style="font-size:13px">Orders are emailed with the weekly Excel file and one ABC form per account every Friday at 2:00 PM.</p>
+ </section>
+
+ <section id="vWeek" hidden>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Not yet sent</h2><button class="linkbtn" id="reloadWeek">Refresh</button></div>
+  <p class="muted" style="font-size:13px;margin:4px 0 12px">These go out in Friday's email. Remove a line here if it was entered by mistake.</p>
+  <div id="week"></div></div>
+ </section>
+</div>
+</div>
+<script src="https://alcdn.msauth.net/browser/2.38.2/js/msal-browser.min.js"></script>
+<script src="app.js?v=1"></script>
+</body></html>
