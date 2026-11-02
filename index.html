@@ -1,5 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>Special Orders</title>
+<meta name="theme-color" content="#2f5866"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Special Orders"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{--bg:#eef1f2;--card:#fff;--ink:#18232a;--muted:#5b6a73;--line:#d3dade;--ours:#2f5866;--warn:#c0623b;--soft:#dde8ec;--ok:#2e7d4f}
 @media (prefers-color-scheme:dark){:root{--bg:#11181c;--card:#1a2328;--ink:#e7ecee;--muted:#9aaab2;--line:#2e3a40;--ours:#7fb6c6;--warn:#e58a63;--soft:#1f3a43;--ok:#6fcf97}}
@@ -39,24 +41,35 @@ input:focus{outline:2px solid var(--ours);outline-offset:-1px}
 .signin .go{margin-top:16px}
 .grp{border-top:1px solid var(--line);padding:12px 0}.grp:first-child{border-top:0;padding-top:0}
 .grp table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}.grp td{padding:4px 6px;border-bottom:1px solid var(--line)}
+.code{font:600 26px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;text-align:center}
+.bigcode{font:700 34px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;margin:8px 0}
+.err{color:var(--warn)}.hint{font-size:13px;color:var(--muted);margin-top:10px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl th,.tbl td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}.tbl th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;border:1px solid var(--line)}.pill.Active{border-color:var(--ok);color:var(--ok)}.pill.Pending{border-color:var(--ours);color:var(--ours)}.pill.Revoked,.pill.Expired{color:var(--muted)}
+.tblwrap{overflow-x:auto}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
 @media (max-width:640px){
  .lines thead{display:none}.lines tr{display:grid;grid-template-columns:1fr 90px 40px;grid-template-areas:"p p x" "q t t";border-bottom:1px solid var(--line);padding:6px 0}
  .lines td.p{grid-area:p}.lines td.q{grid-area:q}.lines td.pr{display:none}.lines td.t{grid-area:t}.lines td.xx{grid-area:x}
- .row2{grid-template-columns:1fr}
+ .row2{grid-template-columns:1fr}.acct{grid-template-columns:1fr 1fr}.tabs button{padding:8px 10px;font-size:14px}
 }
 </style></head><body><div class="wrap">
+<div class="signin" id="register" hidden><h1>Set up this phone</h1><p class="muted">You only do this once. Enter the 8-digit activation code from Matthew Hessell.</p>
+ <input id="regCode" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" placeholder="0000 0000" aria-label="Activation code">
+ <p class="err" id="regErr" hidden></p><button class="go" id="regBtn">Activate this phone</button>
+ <p class="hint">After this you'll sign in with your Microsoft 365 account.</p></div>
+<div class="signin" id="mismatch" hidden><h1>Wrong account</h1><p id="mismatchMsg" class="muted"></p><button class="go" id="mismatchOut">Sign out and switch account</button></div>
 <div class="signin" id="signin" hidden><h1>Special Orders</h1><p class="muted">F.E.B. Distributing. Sign in with your Microsoft 365 account.</p><button class="go" id="signbtn">Sign in with Microsoft</button></div>
 <div id="status" class="status" hidden></div>
 <div id="main" hidden>
  <div class="bar2"><span class="muted">Signed in as <b id="who"></b></span><span><button class="linkbtn" id="signout">Sign out</button></span></div>
  <h1>MS ABC Special Purchase Order</h1>
- <div class="tabs"><button id="tNew" aria-pressed="true">New order</button><button id="tWeek" aria-pressed="false">This week's orders</button></div>
+ <div class="tabs"><button id="tNew" aria-pressed="true">New order</button><button id="tWeek" aria-pressed="false">This week's orders</button><button id="tPhones" aria-pressed="false" hidden>Phones</button></div>
 
  <section id="vNew">
   <div class="card">
    <h2>1. Account</h2>
-   <label class="f" for="acctQ">Search store name, permit holder, permit # or city</label>
+   <label class="f" for="acctQ">Search store name, permit holder, permit #, retailer ID or city</label>
    <div class="search"><input id="acctQ" type="search" autocomplete="off" placeholder="e.g. Rooney's, 030077, Gulfport"><div class="dd" id="acctDD" hidden></div></div>
    <div class="acct empty" id="acct">No account selected.</div>
    <div class="row2" id="acctExtra" hidden>
@@ -79,8 +92,23 @@ input:focus{outline:2px solid var(--ours);outline-offset:-1px}
   <p class="muted" style="font-size:13px;margin:4px 0 12px">These go out in Friday's email. Remove a line here if it was entered by mistake.</p>
   <div id="week"></div></div>
  </section>
+
+ <section id="vPhones" hidden>
+  <div class="card"><h2>Issue an activation code</h2>
+   <p class="muted" style="font-size:13px;margin:0 0 10px">Each code registers one phone, works once, and expires in 72 hours. Desktop computers don't need a code.</p>
+   <div class="row2" style="margin-top:0">
+    <div><label class="f" for="pName">Name</label><input id="pName" list="people" autocomplete="off" placeholder="Rod McCormick"></div>
+    <div><label class="f" for="pEmail">Microsoft 365 email</label><input id="pEmail" type="email" autocomplete="off" placeholder="name@pristinebev.com"></div>
+   </div>
+   <datalist id="people"></datalist>
+   <button class="go" id="issueBtn" style="margin-top:14px">Generate code</button>
+   <div id="issued" class="status ok" hidden></div>
+  </div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Registered phones</h2><button class="linkbtn" id="reloadPhones">Refresh</button></div>
+   <div class="tblwrap" id="phones" style="margin-top:10px"></div></div>
+ </section>
 </div>
 </div>
 <script src="https://alcdn.msauth.net/browser/2.38.2/js/msal-browser.min.js"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body></html>
