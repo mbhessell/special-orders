@@ -54,10 +54,14 @@ input:focus{outline:2px solid var(--ours);outline-offset:-1px}
  .row2{grid-template-columns:1fr}.acct{grid-template-columns:1fr 1fr}.tabs button{padding:8px 10px;font-size:14px}
 }
 </style></head><body><div class="wrap">
-<div class="signin" id="register" hidden><h1>Set up this phone</h1><p class="muted">You only do this once. Enter the 8-digit activation code from Matthew Hessell.</p>
+<div class="signin" id="register" hidden><h1>Set up this phone</h1>
+ <div id="regInstall" hidden><p class="muted">First add Special Orders to your home screen, then open it from there to enter your activation code.</p>
+  <ol style="text-align:left;line-height:1.7;padding-left:20px;margin:14px 0"><li>Tap the <b>Share</b> button <span aria-hidden="true">(square with an arrow)</span> in Safari.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open <b>Special Orders</b> from your home screen.</li></ol>
+  <p class="hint">Don't enter your code here in Safari. It only works once, and the home-screen app can't see Safari's setup. <a href="#" id="regAnyway" class="linkbtn" style="padding:0">Use it in Safari instead</a></p></div>
+ <div id="regForm"><p class="muted">You only do this once. Enter the 8-digit activation code from Matthew Hessell.</p>
  <input id="regCode" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="9" placeholder="0000 0000" aria-label="Activation code">
  <p class="err" id="regErr" hidden></p><button class="go" id="regBtn">Activate this phone</button>
- <p class="hint">After this you'll sign in with your Microsoft 365 account.</p></div>
+ <p class="hint">After this you'll sign in with your Microsoft 365 account.</p></div></div>
 <div class="signin" id="mismatch" hidden><h1>Wrong account</h1><p id="mismatchMsg" class="muted"></p><button class="go" id="mismatchOut">Sign out and switch account</button></div>
 <div class="signin" id="signin" hidden><h1>Special Orders</h1><p class="muted">F.E.B. Distributing. Sign in with your Microsoft 365 account.</p><button class="go" id="signbtn">Sign in with Microsoft</button></div>
 <div id="status" class="status" hidden></div>
@@ -95,7 +99,7 @@ input:focus{outline:2px solid var(--ours);outline-offset:-1px}
 
  <section id="vPhones" hidden>
   <div class="card"><h2>Issue an activation code</h2>
-   <p class="muted" style="font-size:13px;margin:0 0 10px">Each code registers one phone, works once, and expires in 72 hours. Desktop computers don't need a code.</p>
+   <p class="muted" style="font-size:13px;margin:0 0 10px">Each code registers one phone, works once, and expires in 72 hours. Desktop computers don't need a code. Use <b>New code</b> in the list below to re-issue one for someone.</p>
    <div class="row2" style="margin-top:0">
     <div><label class="f" for="pName">Name</label><input id="pName" list="people" autocomplete="off" placeholder="Rod McCormick"></div>
     <div><label class="f" for="pEmail">Microsoft 365 email</label><input id="pEmail" type="email" autocomplete="off" placeholder="name@pristinebev.com"></div>
@@ -110,5 +114,5 @@ input:focus{outline:2px solid var(--ours);outline-offset:-1px}
 </div>
 </div>
 <script src="https://alcdn.msauth.net/browser/2.38.2/js/msal-browser.min.js"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body></html>

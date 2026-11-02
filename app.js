@@ -213,8 +213,15 @@
     return j;
   }
   function showOnly(id) { ["register", "mismatch", "signin", "main"].forEach(x => $("#" + x).hidden = x !== id); }
-  function showRegister(msg) {
+  const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isStandalone = () => (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  function showRegister(msg, force) {
     showOnly("register"); status("");
+    // On iPhone/iPad, Safari and the home-screen app don't share storage: registering in Safari would use up the code.
+    const installFirst = isIOS() && !isStandalone() && !force;
+    $("#regInstall").hidden = !installFirst; $("#regForm").hidden = installFirst;
+    $("#regAnyway").onclick = e => { e.preventDefault(); showRegister(msg, true); };
+    if (installFirst) return;
     const inp = $("#regCode"), err = $("#regErr");
     err.hidden = !msg; err.textContent = msg || "";
     inp.oninput = () => { const d = inp.value.replace(/\D/g, "").slice(0, 8); inp.value = d.length > 4 ? d.slice(0, 4) + " " + d.slice(4) : d; };
@@ -267,7 +274,13 @@
       $("#phones").innerHTML = '<table class="tbl"><thead><tr><th>Person</th><th>Status</th><th>Phone</th><th>Registered</th><th>Last used</th><th></th></tr></thead><tbody>' +
         rows.map(r => "<tr><td><b>" + esc(r.PersonName || r.Title) + '</b><br><small class="muted">' + esc(r.Email) + '</small></td><td><span class="pill ' + esc(r.DeviceStatus) + '">' + esc(r.DeviceStatus) +
           (r.DeviceStatus === "Pending" ? "</span><br><small class=\"muted\">until " + fmtDT(r.CodeExpires) + "</small>" : "</span>") + "</td><td>" + esc(r.DeviceName || "–") + "</td><td>" + fmtDT(r.RegisteredAt) + "</td><td>" + fmtDT(r.LastSeen) +
-          '</td><td class="num">' + (r.DeviceStatus === "Active" || r.DeviceStatus === "Pending" ? '<button class="linkbtn" data-revoke="' + r.id + '">' + (r.DeviceStatus === "Active" ? "Revoke" : "Cancel") + "</button>" : "") + "</td></tr>").join("") + "</tbody></table>";
+          '</td><td class="num">' + '<button class="linkbtn" data-newcode="' + r.id + '">New code</button>' + (r.DeviceStatus === "Active" || r.DeviceStatus === "Pending" ? ' <button class="linkbtn" data-revoke="' + r.id + '">' + (r.DeviceStatus === "Active" ? "Revoke" : "Cancel") + "</button>" : "") + "</td></tr>").join("") + "</tbody></table>";
+      $("#phones").querySelectorAll("[data-newcode]").forEach(b => b.onclick = () => {
+        const r = rows.find(x => String(x.id) === b.dataset.newcode); if (!r) return;
+        $("#pName").value = r.PersonName || r.Title || ""; $("#pEmail").value = r.Email || "";
+        issueCode(r.DeviceStatus === "Pending" ? r.id : null);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
       $("#phones").querySelectorAll("[data-revoke]").forEach(b => b.onclick = async () => {
         if (!confirm("Remove access for this phone? The person will need a new code to use it again.")) return;
         b.disabled = true;
@@ -276,16 +289,17 @@
       });
     } catch (e) { if (e.message !== "redirecting") $("#phones").innerHTML = '<p class="status err">Couldn\'t load phones (' + esc(e.message) + ").</p>"; }
   }
-  async function issueCode() {
+  async function issueCode(replacePendingId) {
     const name = $("#pName").value.trim(), email = $("#pEmail").value.trim().toLowerCase();
     if (!name || !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) { alert("Enter the person's name and Microsoft 365 email."); return; }
     const btn = $("#issueBtn"); btn.disabled = true; btn.textContent = "Generating…";
     try {
       const a = new Uint32Array(1); crypto.getRandomValues(a); const code = String(a[0] % 100000000).padStart(8, "0");
       const expires = new Date(Date.now() + 72 * 3600 * 1000);
+      if (typeof replacePendingId === "string" || typeof replacePendingId === "number") { try { await graph(L(CFG.lists.devices) + "/" + replacePendingId + "/fields", { method: "PATCH", body: { DeviceStatus: "Revoked", Code: "replaced" } }); } catch (e) {} }
       await graph(L(CFG.lists.devices), { method: "POST", body: { fields: { Title: name, PersonName: name, Email: email, Code: code, CodeExpires: expires.toISOString(), DeviceStatus: "Pending", IssuedBy: account.name || account.username } } });
       const pretty = code.slice(0, 4) + " " + code.slice(4);
-      const body = "Hi " + name.split(" ")[0] + ",\n\nHere's how to set up the Special Orders app on your phone:\n\n1. On your phone, open https://so.febdistributing.com\n2. Add it to your home screen (iPhone: Share > Add to Home Screen; Android: menu > Install app), then open it from there.\n3. Enter this activation code: " + pretty + "\n4. Sign in with your Microsoft 365 account (" + email + ").\n\nThe code works once and expires " + expires.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + ".\n";
+      const body = "Hi " + name.split(" ")[0] + ",\n\nHere's how to set up the Special Orders app on your phone:\n\n1. On your phone, open https://so.febdistributing.com\n2. Add it to your home screen FIRST (iPhone: Share > Add to Home Screen; Android: menu > Install app).\n3. Open Special Orders from the home-screen icon (not the browser) and enter this activation code: " + pretty + "\n4. Sign in with your Microsoft 365 account (" + email + ").\n\nThe code works once and expires " + expires.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + ".\n";
       $("#issued").hidden = false;
       $("#issued").innerHTML = "Code for <b>" + esc(name) + '</b>:<div class="bigcode">' + pretty + '</div><small>Expires ' + esc(expires.toLocaleString()) + '. Only works for ' + esc(email) + '.</small><br>' +
         '<a class="linkbtn" href="mailto:' + encodeURIComponent(email) + "?subject=" + encodeURIComponent("Your Special Orders activation code") + "&body=" + encodeURIComponent(body) + '">Email it to ' + esc(name.split(" ")[0]) + "</a> · " +
@@ -312,7 +326,7 @@
     $("#addLine").onclick = () => { LINES.push({}); renderLines(); const all = $("#lines").querySelectorAll(".pq"); all[all.length - 1].focus(); };
     $("#submit").onclick = submit;
     $("#tNew").onclick = () => tab("new"); $("#tWeek").onclick = () => tab("week"); $("#tPhones").onclick = () => tab("phones");
-    $("#issueBtn").onclick = issueCode; $("#reloadPhones").onclick = loadPhones;
+    $("#issueBtn").onclick = () => issueCode(); $("#reloadPhones").onclick = loadPhones;
     $("#people").innerHTML = CFG.people.map(p => '<option value="' + esc(p[0]) + '">').join("");
     $("#pName").onchange = () => { const m = CFG.people.find(p => p[0].toLowerCase() === $("#pName").value.trim().toLowerCase()); if (m && !$("#pEmail").value) $("#pEmail").value = m[1]; };
     $("#reloadWeek").onclick = loadWeek;
